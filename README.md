@@ -1,4 +1,4 @@
-<----Properties---->
+<----Properties---->\n
 resources/application.properties:
 -db.url=
 -db.username=
