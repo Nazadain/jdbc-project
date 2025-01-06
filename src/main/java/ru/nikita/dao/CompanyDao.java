@@ -10,8 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public final class CompanyDao implements Dao<Long, Company> {
-
-    private static final CompanyDao INSTANCE = new CompanyDao();
+    private static CompanyDao instance;
 
     private static final String SAVE = "INSERT INTO company (name) VALUES (?)";
 
@@ -103,7 +102,10 @@ public final class CompanyDao implements Dao<Long, Company> {
     }
 
     public static CompanyDao getInstance() {
-        return INSTANCE;
+        if (instance == null) {
+            instance = new CompanyDao();
+        }
+        return instance;
     }
 
     private static Company buildCompany(ResultSet result) throws SQLException {
