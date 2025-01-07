@@ -1,7 +1,6 @@
 package ru.nikita.dao;
 
 import ru.nikita.dto.EmployeeFilter;
-import ru.nikita.entity.Company;
 import ru.nikita.entity.Employee;
 import ru.nikita.exception.DaoException;
 import ru.nikita.utils.ConnectionManager;
@@ -21,7 +20,9 @@ public final class EmployeeDao implements Dao<Long, Employee> {
 
     private static final String FIND_ALL = "SELECT * FROM employee";
 
-    private static final String FIND_BY_ID = FIND_ALL +  " WHERE id = ?";
+    private static final String FIND_ALL_BY_COMPANY = FIND_ALL + " WHERE company_id = ?";
+
+    private static final String FIND_BY_ID = FIND_ALL + " WHERE id = ?";
 
     private static final String UPDATE =
             "UPDATE employee SET first_name = ?, last_name = ?, age = ?, company_id = ? WHERE id = ?";
@@ -46,47 +47,7 @@ public final class EmployeeDao implements Dao<Long, Employee> {
         }
     }
 
-    public List<Employee> findAll(EmployeeFilter filter) {
-        List<Object> parameters = new ArrayList<>();
-        List<String> whereSql = new ArrayList<>();
-        if (filter.getFirstName() != null) {
-            parameters.add(filter.getFirstName());
-            whereSql.add("first_name = ?");
-        }
-        if (filter.getLastName() != null) {
-            parameters.add(filter.getLastName());
-            whereSql.add("last_name = ?");
-        }
-        if (filter.getCompanyId() != 0) {
-            parameters.add(filter.getCompanyId());
-            whereSql.add("company_id = ?");
-        }
-        parameters.add(filter.getLimit());
-        parameters.add(filter.getOffset());
-        String where = whereSql.stream()
-                .collect(Collectors.joining(
-                        " AND ",
-                        parameters.size() > 2 ? " WHERE " : "",
-                        " LIMIT ? OFFSET ? "
-                ));
-        String sql = FIND_ALL + where;
-
-        try (Connection connection = ConnectionManager.get();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            List<Employee> employees = new ArrayList<>();
-            for (int i = 0; i < parameters.size(); i++) {
-                statement.setObject(i + 1, parameters.get(i));
-            }
-            ResultSet result = statement.executeQuery();
-            while (result.next()) {
-                employees.add(buildEmployee(result));
-            }
-            return employees;
-        } catch (SQLException e) {
-            throw new DaoException(e);
-        }
-    }
-
+    @Override
     public List<Employee> findAll() {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement statement = connection.prepareStatement(FIND_ALL)) {
@@ -135,6 +96,62 @@ public final class EmployeeDao implements Dao<Long, Employee> {
              PreparedStatement statement = connection.prepareStatement(DELETE_BY_ID)) {
             statement.setLong(1, id);
             return statement.executeUpdate() == 1;
+        } catch (SQLException e) {
+            throw new DaoException(e);
+        }
+    }
+
+    public List<Employee> findAllByCompanyId(Long id) {
+        try (Connection connection = ConnectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(FIND_ALL_BY_COMPANY)) {
+            statement.setLong(1, id);
+            ResultSet result = statement.executeQuery();
+            List<Employee> employees = new ArrayList<>();
+            while (result.next()) {
+                employees.add(buildEmployee(result));
+            }
+            return employees;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<Employee> findAll(EmployeeFilter filter) {
+        List<Object> parameters = new ArrayList<>();
+        List<String> whereSql = new ArrayList<>();
+        if (filter.firstName() != null) {
+            parameters.add(filter.firstName());
+            whereSql.add("first_name = ?");
+        }
+        if (filter.lastName() != null) {
+            parameters.add(filter.lastName());
+            whereSql.add("last_name = ?");
+        }
+        if (filter.companyId() != 0) {
+            parameters.add(filter.companyId());
+            whereSql.add("company_id = ?");
+        }
+        parameters.add(filter.limit());
+        parameters.add(filter.offset());
+        String where = whereSql.stream()
+                .collect(Collectors.joining(
+                        " AND ",
+                        parameters.size() > 2 ? " WHERE " : "",
+                        " LIMIT ? OFFSET ? "
+                ));
+        String sql = FIND_ALL + where;
+
+        try (Connection connection = ConnectionManager.get();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            List<Employee> employees = new ArrayList<>();
+            for (int i = 0; i < parameters.size(); i++) {
+                statement.setObject(i + 1, parameters.get(i));
+            }
+            ResultSet result = statement.executeQuery();
+            while (result.next()) {
+                employees.add(buildEmployee(result));
+            }
+            return employees;
         } catch (SQLException e) {
             throw new DaoException(e);
         }

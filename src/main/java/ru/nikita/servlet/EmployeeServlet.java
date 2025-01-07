@@ -19,11 +19,12 @@ public class EmployeeServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("text/html");
         resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        Long companyId = Long.parseLong(req.getParameter("companyId"));
 
         try (PrintWriter out = resp.getWriter()) {
-            out.write("<h2>Employees: </h2>");
+            out.write("<h2>Сотрудники: </h2>");
             out.write("<ul>");
-            employeeService.findAll().forEach(employee -> {
+            employeeService.findAllByCompanyId(companyId).forEach(employee -> {
                 out.write("<li>%s %d</li>"
                         .formatted(employee.name(), employee.age()));
             });
