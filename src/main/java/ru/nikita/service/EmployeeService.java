@@ -7,6 +7,7 @@ import ru.nikita.entity.Employee;
 import java.util.List;
 
 public final class EmployeeService {
+
     private static EmployeeService instance;
     private final EmployeeDao employeeDao = EmployeeDao.getInstance();
 
