@@ -1,4 +1,3 @@
-Properties: resources/application.properties: |db.url=|db.username=|db.password=|db.pool.size=|
-
+It`s a study project on Java, Jakarta Servlet API and PostgreSQL using jdbc.
 
 
