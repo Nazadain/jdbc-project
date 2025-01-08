@@ -12,7 +12,7 @@
 <h2>Компании: </h2>
 <ul>
     <c:forEach var="company" items="${requestScope.companies}">
-        <li><a href="/employees?companyId=${company.id()}">${company.name()}</a></li>
+        <li><a href="${pageContext.request.contextPath}/employees?companyId=${company.id()}">${company.name()}</a></li>
     </c:forEach>
 </ul>
 </body>
