@@ -2,9 +2,7 @@ package ru.nikita.entity;
 
 import lombok.*;
 
-@ToString
-@Getter @Setter
-@EqualsAndHashCode
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Employee {
