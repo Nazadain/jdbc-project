@@ -10,7 +10,7 @@ public class JdbcRunner {
     public static void main(String[] args) throws SQLException {
         try (
                 Connection connection = ConnectionManager.get();
-                Statement statement = connection.createStatement();
+                Statement statement = connection.createStatement()
         ) {
             String sql = """
                     SELECT e.first_name || ' ' || e.last_name FIO, cmp.name Company, c.number || ' ' || t.name Number

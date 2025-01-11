@@ -1,7 +1,8 @@
 package ru.nikita.dao;
 
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import ru.nikita.entity.Company;
-import ru.nikita.exception.DaoException;
 import ru.nikita.utils.ConnectionManager;
 
 import java.sql.*;
@@ -9,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static lombok.AccessLevel.PRIVATE;
+
+@NoArgsConstructor(access = PRIVATE)
 public final class CompanyDao implements Dao<Long, Company> {
     private static CompanyDao instance;
 
@@ -23,9 +27,13 @@ public final class CompanyDao implements Dao<Long, Company> {
     private static final String DELETE = "DELETE FROM company WHERE id = ?";
 
     @Override
+    @SneakyThrows
     public Long save(Company company) {
-        try (Connection connection = ConnectionManager.get();
-             PreparedStatement statement = connection.prepareStatement(SAVE, Statement.RETURN_GENERATED_KEYS)) {
+        try (
+                Connection connection = ConnectionManager.get();
+                PreparedStatement statement = connection.prepareStatement(SAVE,
+                        Statement.RETURN_GENERATED_KEYS)
+        ) {
             statement.setString(1, company.getName());
             statement.executeUpdate();
             ResultSet keys = statement.getGeneratedKeys();
@@ -33,26 +41,26 @@ public final class CompanyDao implements Dao<Long, Company> {
                 company.setId(keys.getLong(1));
             }
             return company.getId();
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
     @Override
+    @SneakyThrows
     public List<Company> findAll() {
-        try (Connection connection = ConnectionManager.get();
-             PreparedStatement statement = connection.prepareStatement(FIND_ALL)) {
+        try (
+                Connection connection = ConnectionManager.get();
+                PreparedStatement statement = connection.prepareStatement(FIND_ALL)
+        ) {
             ResultSet resultSet = statement.executeQuery();
             List<Company> companies = new ArrayList<>();
             while (resultSet.next()) {
                 companies.add(buildCompany(resultSet));
             }
             return companies;
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
+    @SneakyThrows
     public Optional<Company> findById(Long id, Connection connection) {
         try (PreparedStatement statement = connection.prepareStatement(FIND_BY_ID)) {
             statement.setLong(1, id);
@@ -62,43 +70,39 @@ public final class CompanyDao implements Dao<Long, Company> {
                 company = buildCompany(result);
             }
             return Optional.ofNullable(company);
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
     @Override
+    @SneakyThrows
     public Optional<Company> findById(Long id) {
         try (Connection connection = ConnectionManager.get()) {
             return findById(id, connection);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 
     @Override
+    @SneakyThrows
     public boolean update(Company entity) {
-        try (Connection connection = ConnectionManager.get();
-             PreparedStatement statement = connection.prepareStatement(UPDATE)) {
+        try (
+                Connection connection = ConnectionManager.get();
+                PreparedStatement statement = connection.prepareStatement(UPDATE)
+        ) {
             statement.setString(1, entity.getName());
             return statement.executeUpdate() == 1;
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
     @Override
+    @SneakyThrows
     public boolean delete(Long id) {
-        try (Connection connection = ConnectionManager.get();
-             PreparedStatement statement = connection.prepareStatement(DELETE)) {
+        try (
+                Connection connection = ConnectionManager.get();
+                PreparedStatement statement = connection.prepareStatement(DELETE)
+        ) {
             statement.setLong(1, id);
             return statement.executeUpdate() == 1;
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
-    }
-
-    private CompanyDao() {
     }
 
     public static CompanyDao getInstance() {

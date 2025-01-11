@@ -1,5 +1,8 @@
 package ru.nikita.dao;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import ru.nikita.dto.EmployeeFilter;
 import ru.nikita.entity.Employee;
 import ru.nikita.exception.DaoException;
@@ -11,9 +14,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class EmployeeDao implements Dao<Long, Employee> {
+    private static final CompanyDao companyDao = CompanyDao.getInstance();
     private static EmployeeDao instance;
-    private static CompanyDao companyDao = CompanyDao.getInstance();
 
     private static final String SAVE =
             "INSERT INTO employee (first_name, last_name, age, company_id) VALUES (?,?,?,?)";
@@ -29,6 +33,7 @@ public final class EmployeeDao implements Dao<Long, Employee> {
 
     private static final String DELETE_BY_ID = "DELETE FROM employee WHERE id = ?";
 
+    @SneakyThrows
     public Long save(Employee employee) {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement statement = connection.prepareStatement(SAVE, Statement.RETURN_GENERATED_KEYS)) {
@@ -42,12 +47,11 @@ public final class EmployeeDao implements Dao<Long, Employee> {
                 employee.setId(keys.getLong(1));
             }
             return employee.getId();
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
     @Override
+    @SneakyThrows
     public List<Employee> findAll() {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement statement = connection.prepareStatement(FIND_ALL)) {
@@ -57,11 +61,11 @@ public final class EmployeeDao implements Dao<Long, Employee> {
                 employees.add(buildEmployee(result));
             }
             return employees;
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
+    @Override
+    @SneakyThrows
     public Optional<Employee> findById(Long id) {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement statement = connection.prepareStatement(FIND_BY_ID)) {
@@ -72,11 +76,11 @@ public final class EmployeeDao implements Dao<Long, Employee> {
                 employee = buildEmployee(result);
             }
             return Optional.ofNullable(employee);
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
+    @Override
+    @SneakyThrows
     public boolean update(Employee employee) {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement statement = connection.prepareStatement(UPDATE)) {
@@ -86,21 +90,20 @@ public final class EmployeeDao implements Dao<Long, Employee> {
             statement.setLong(4, employee.getCompany().getId());
             statement.setLong(5, employee.getId());
             return statement.executeUpdate() == 1;
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
+    @Override
+    @SneakyThrows
     public boolean delete(Long id) {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement statement = connection.prepareStatement(DELETE_BY_ID)) {
             statement.setLong(1, id);
             return statement.executeUpdate() == 1;
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
+    @SneakyThrows
     public List<Employee> findAllByCompanyId(Long id) {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement statement = connection.prepareStatement(FIND_ALL_BY_COMPANY)) {
@@ -111,11 +114,10 @@ public final class EmployeeDao implements Dao<Long, Employee> {
                 employees.add(buildEmployee(result));
             }
             return employees;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 
+    @SneakyThrows
     public List<Employee> findAll(EmployeeFilter filter) {
         List<Object> parameters = new ArrayList<>();
         List<String> whereSql = new ArrayList<>();
@@ -152,8 +154,6 @@ public final class EmployeeDao implements Dao<Long, Employee> {
                 employees.add(buildEmployee(result));
             }
             return employees;
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
@@ -167,9 +167,6 @@ public final class EmployeeDao implements Dao<Long, Employee> {
                                 result.getStatement().getConnection())
                         .orElse(null)
         );
-    }
-
-    private EmployeeDao() {
     }
 
     public static EmployeeDao getInstance() {

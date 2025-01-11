@@ -1,13 +1,17 @@
 package ru.nikita.service;
 
+import lombok.NoArgsConstructor;
 import ru.nikita.dao.CompanyDao;
 import ru.nikita.dto.CompanyDto;
 
 import java.util.List;
 
+import static lombok.AccessLevel.PRIVATE;
+
+@NoArgsConstructor(access = PRIVATE)
 public final class CompanyService {
     private static CompanyService instance;
-    private CompanyDao companyDao = CompanyDao.getInstance();
+    private final CompanyDao companyDao = CompanyDao.getInstance();
 
     public List<CompanyDto> findAll() {
         return companyDao.findAll().stream()
@@ -17,9 +21,6 @@ public final class CompanyService {
                                 company.getName()
                         ))
                 .toList();
-    }
-
-    private CompanyService() {
     }
 
     public static CompanyService getInstance() {
